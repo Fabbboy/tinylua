@@ -2,7 +2,13 @@
 
 #include "ltypes.h"
 #include <stddef.h>
-typedef enum { KIND_EOF, KIND_ERR, KIND_IDENT } kind_t;
+typedef enum {
+  KIND_EOF,
+  KIND_ERR,
+  KIND_IDENT,
+  KIND_NUMBER,
+  KIND_LOCAL,
+} kind_t;
 
 typedef struct {
   kind_t type;
