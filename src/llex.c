@@ -44,10 +44,10 @@ void lexer_init(llexer_t *lexer, const char *src, u32 len) {
   lexer->curr = new_token(KIND_EOF, NULL, 0);
   lexer->next = new_token(KIND_EOF, NULL, 0);
   DEBUG_LOG("length of input source: %d\n", len);
-
+  DEBUG_LOG("Hash table:\n");
   for (int i = 0; i < KEYWORDS_COUNT; i++) {
     keyword_lookup[i].key = hash(keyword_lookup[i].inter);
-    DEBUG_LOG("Generated hash from iter: %d\n", keyword_lookup[i].key);
+    DEBUG_LOG("- %s: %d\n", keyword_lookup[i].inter, keyword_lookup[i].key);
   }
 };
 
@@ -88,7 +88,7 @@ static kind_t lex_ident(llexer_t *lexer) {
   kind_t kind = KIND_IDENT;
   u32 len = get_len(lexer);
   u32 hash = hash_len(lexer->ptr, len);
-  DEBUG_LOG("Lexeme Hash: %d\n", hash);
+  DEBUG_LOG("computed hash %d for %.*s\n", hash, len, lexer->ptr);
   for (int i = 0; i < KEYWORDS_COUNT; i++) {
     if (hash == keyword_lookup[i].key) {
       kind = keyword_lookup[i].value;
