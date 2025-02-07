@@ -10,7 +10,8 @@ int main() {
   lexer_init(&lexer, source, sizeof(source));
   while (true) {
     kind_t k = lexer_next(&lexer);
-    printf("Token: %d\n", k);
-    if (k == KIND_EOF) break;
+    printf("Token: %d %.*s\n", k, (int)lexer.curr.len, lexer.curr.start);
+    if (k == KIND_EOF)
+      break;
   }
 }
