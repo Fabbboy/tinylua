@@ -33,24 +33,6 @@ tok_t empty_token() { return (tok_t){0}; };
 LEXER
 ***/
 
-void lexer_init(llexer_t *lexer, const char *src, u32 len) {
-  CHECK_NULL(lexer, );
-  CHECK_NULL(src, );
-
-  lexer->src = src;
-  lexer->length = len;
-  lexer->pos = 0;
-  lexer->ptr = NULL;
-  lexer->curr = new_token(KIND_EOF, NULL, 0);
-  lexer->next = new_token(KIND_EOF, NULL, 0);
-  DEBUG_LOG("length of input source: %d\n", len);
-  DEBUG_LOG("Hash table:\n");
-  for (int i = 0; i < KEYWORDS_COUNT; i++) {
-    keyword_lookup[i].key = hash(keyword_lookup[i].inter);
-    DEBUG_LOG("- %s: %d\n", keyword_lookup[i].inter, keyword_lookup[i].key);
-  }
-};
-
 static char get_curr(llexer_t *lexer) {
   CHECK_NULL(lexer, 0);
   if (lexer->pos >= lexer->length) {
@@ -95,7 +77,7 @@ static kind_t lex_ident(llexer_t *lexer) {
     }
   }
 
-  lexer->curr = NEWT(kind);
+  lexer->nextTok = NEWT(kind);
   return kind;
 }
 
@@ -112,17 +94,17 @@ static kind_t lex_number(llexer_t *lexer) {
     k = KIND_DECIMAL;
   }
 
-  lexer->curr = NEWT(k);
+  lexer->nextTok = NEWT(k);
 
   return k;
 }
 
-kind_t lexer_next(llexer_t *lexer) {
-  CHECK_NULL(lexer, KIND_ERR);
+static void lexer_lex(llexer_t *lexer) {
+  CHECK_NULL(lexer, );
   if (lexer->pos >= lexer->length) {
     DEBUG_LOG("Reached end of input\n");
-    lexer->curr = empty_token();
-    return KIND_EOF;
+    lexer->currTok = empty_token();
+    return;
   }
 
   lex_trivia(lexer);
@@ -130,23 +112,55 @@ kind_t lexer_next(llexer_t *lexer) {
   lexer->ptr = get_start(lexer);
   switch (c) {
   case 0:
-    lexer->curr = empty_token();
-    return KIND_EOF;
+    lexer->nextTok = empty_token();
+    break;
   case 'a' ... 'z':
   case 'A' ... 'Z':
   case '_':
-    return lex_ident(lexer);
+    lex_ident(lexer);
+    break;
   case '0' ... '9':
-    return lex_number(lexer);
+    lex_number(lexer);
+    break;
   case '=':
     lexer->pos++;
-    lexer->curr = NEWT(KIND_ASSIGN);
-    return KIND_ASSIGN;
+    lexer->nextTok = NEWT(KIND_ASSIGN);
+    break;
   default:
     lexer->pos++;
-    lexer->curr = new_token(KIND_ERR, lexer->ptr, 1);
-    return KIND_ERR;
+    lexer->nextTok = new_token(KIND_ERR, lexer->ptr, 1);
+    break;
   }
-
-  return KIND_EOF;
 }
+
+void lexer_init(llexer_t *lexer, const char *src, u32 len) {
+  CHECK_NULL(lexer, );
+  CHECK_NULL(src, );
+
+  lexer->src = src;
+  lexer->length = len;
+  lexer->pos = 0;
+  lexer->ptr = NULL;
+  lexer_lex(lexer);
+  DEBUG_LOG("Setting nextTok\n");
+  lexer->currTok = new_token(KIND_EOF, NULL, 0);
+  DEBUG_LOG("length of input source: %d\n", len);
+  DEBUG_LOG("Hash table:\n");
+  for (int i = 0; i < KEYWORDS_COUNT; i++) {
+    keyword_lookup[i].key = hash(keyword_lookup[i].inter);
+    DEBUG_LOG("- %s: %d\n", keyword_lookup[i].inter, keyword_lookup[i].key);
+  }
+};
+
+kind_t lexer_next(llexer_t *lexer) {
+  CHECK_NULL(lexer, KIND_ERR);
+
+  lexer->currTok = lexer->nextTok;
+  lexer_lex(lexer);
+  return lexer->currTok.type;
+}
+
+kind_t lexer_peek(llexer_t *lexer) {
+  CHECK_NULL(lexer, KIND_ERR);
+  return lexer->nextTok.type;
+};

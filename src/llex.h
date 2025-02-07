@@ -26,9 +26,10 @@ typedef struct {
   u32 length;
   u32 pos;
   char *ptr;
-  tok_t curr;
-  tok_t next;
+  tok_t currTok;
+  tok_t nextTok;
 } llexer_t;
 
 void lexer_init(llexer_t *lexer, const char *src, u32 len);
 kind_t lexer_next(llexer_t *lexer);
+kind_t lexer_peek(llexer_t* lexer);
