@@ -7,7 +7,9 @@ typedef enum {
   KIND_ERR,
   KIND_IDENT,
   KIND_NUMBER,
+  KIND_DECIMAL,
   KIND_LOCAL,
+  KIND_ASSIGN,
 } kind_t;
 
 typedef struct {
@@ -17,6 +19,7 @@ typedef struct {
 } tok_t;
 
 tok_t new_token(kind_t type, char *start, size_t len);
+tok_t empty_token();
 
 typedef struct {
   const char *src;

@@ -4,7 +4,7 @@
 
 #include "llex.h"
 int main() {
-  const char source[] = "local test = 123";
+  const char source[] = "local test = 123.2";
 
   llexer_t lexer;
   lexer_init(&lexer, source, sizeof(source));

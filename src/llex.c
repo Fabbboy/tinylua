@@ -9,6 +9,7 @@
 #include "ltypes.h"
 
 #define KEYWORDS_COUNT 1
+#define NEWT(kind) new_token(kind, lexer->ptr, get_len(lexer))
 
 static struct {
   u32 key;
@@ -25,6 +26,8 @@ tok_t new_token(kind_t type, char *start, size_t len) {
   tok.len = len;
   return tok;
 };
+
+tok_t empty_token() { return (tok_t){0}; };
 
 /***
 LEXER
@@ -92,13 +95,33 @@ static kind_t lex_ident(llexer_t *lexer) {
     }
   }
 
-  lexer->curr = new_token(kind, lexer->ptr, get_len(lexer));
+  lexer->curr = NEWT(kind);
   return kind;
 }
+
+static kind_t lex_number(llexer_t *lexer) {
+  while (isdigit(get_curr(lexer)))
+    lexer->pos++;
+
+  kind_t k = KIND_NUMBER;
+  if (get_curr(lexer) == '.') {
+    lexer->pos++;
+    while (isdigit(get_curr(lexer)))
+      lexer->pos++;
+
+    k = KIND_DECIMAL;
+  }
+
+  lexer->curr = NEWT(k);
+
+  return k;
+}
+
 kind_t lexer_next(llexer_t *lexer) {
   CHECK_NULL(lexer, KIND_ERR);
   if (lexer->pos >= lexer->length) {
     DEBUG_LOG("Reached end of input\n");
+    lexer->curr = empty_token();
     return KIND_EOF;
   }
 
@@ -107,11 +130,18 @@ kind_t lexer_next(llexer_t *lexer) {
   lexer->ptr = get_start(lexer);
   switch (c) {
   case 0:
+    lexer->curr = empty_token();
     return KIND_EOF;
   case 'a' ... 'z':
   case 'A' ... 'Z':
   case '_':
     return lex_ident(lexer);
+  case '0' ... '9':
+    return lex_number(lexer);
+  case '=':
+    lexer->pos++;
+    lexer->curr = NEWT(KIND_ASSIGN);
+    return KIND_ASSIGN;
   default:
     lexer->pos++;
     lexer->curr = new_token(KIND_ERR, lexer->ptr, 1);

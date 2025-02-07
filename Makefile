@@ -1,4 +1,4 @@
-CC:=$(shell which gcc)
+CC?=$(shell which gcc)
 BEAR:=$(shell which bear)
 CFLAGS:=-Wall -Wextra -Werror -std=c11 -g
 
