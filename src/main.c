@@ -10,4 +10,5 @@ int main() {
   lparser_t parser;
   lexer_init(&lexer, source, sizeof(source));
   parser_init(&parser, &lexer);
+  parser_parse(&parser);
 }
