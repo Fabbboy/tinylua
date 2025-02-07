@@ -1,17 +1,13 @@
 #include <stdbool.h>
 #include <stddef.h>
-#include <stdio.h>
 
 #include "llex.h"
+#include "lparse.h"
 int main() {
   const char source[] = "local test = 123.2";
 
   llexer_t lexer;
+  lparser_t parser;
   lexer_init(&lexer, source, sizeof(source));
-  while (true) {
-    kind_t k = lexer_next(&lexer);
-    printf("Token: %d %.*s\n", k, (int)lexer.curr.len, lexer.curr.start);
-    if (k == KIND_EOF)
-      break;
-  }
+  parser_init(&parser, &lexer);
 }
