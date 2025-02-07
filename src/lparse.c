@@ -10,6 +10,13 @@
   kind_t name[] = {__VA_ARGS__};                                               \
   u32 name##_len = sizeof(name) / sizeof(name[0]);
 
+const int precedence[] = {
+    ['+'] = 1,
+    ['-'] = 1,
+    ['*'] = 2,
+    ['/'] = 2,
+};
+
 static bool next(lparser_t *parser, tok_t *result, kind_t expected[],
                  u32 expected_len) {
   kind_t got = lexer_next(parser->lexer);
@@ -29,6 +36,17 @@ static bool next(lparser_t *parser, tok_t *result, kind_t expected[],
   fbuf_write(&parser->errBuf, "], but got: %s\n", kind_names[got]);
   ERROR_LOG("%s", fbuf_get(&parser->errBuf));
   fbuf_reset(&parser->errBuf);
+  return false;
+}
+
+static bool peek(lparser_t *parser, kind_t expected[], u32 expected_len) {
+  kind_t got = lexer_peek(parser->lexer);
+  for (u32 i = 0; i < expected_len; i++) {
+    if (expected[i] == got) {
+      return true;
+    }
+  }
+
   return false;
 }
 
@@ -79,9 +97,31 @@ static lexpr_t *sexpr(lparser_t *parser) {
   return expr;
 };
 
-static lexpr_t *expr(lparser_t *parser) {
-  lexpr_t *expr = sexpr(parser);
-  return expr;
+static lexpr_t *expr(lparser_t *parser, u32 prec) {
+  lexpr_t *lhs = sexpr(parser);
+
+  EXP_LIST(exp_op, KIND_PLUS, KIND_MINUS, KIND_STAR, KIND_SLASH);
+  while (peek(parser, exp_op, exp_op_len)) {
+    tok_t op;
+    next(parser, &op, exp_op, exp_op_len);
+
+    u32 new_prec = precedence[(u32)op.start[0]];
+    if (new_prec < prec) {
+      break;
+    }
+
+    lexpr_t *rhs = expr(parser, new_prec + 1);
+    if (rhs == NULL) {
+      return NULL;
+    }
+
+    lexpr_t *binary = new_lexpr(LEXPK_BINARY);
+    binary->binary.left = lhs;
+    binary->binary.right = rhs;
+    lhs = binary;
+  }
+
+  return lhs;
 }
 
 static lvar_stmt *varstmt(lparser_t *parser) {
@@ -99,7 +139,7 @@ static lvar_stmt *varstmt(lparser_t *parser) {
     return NULL;
   }
 
-  lexpr_t *val = expr(parser);
+  lexpr_t *val = expr(parser, 0);
   if (val == NULL) {
     return NULL;
   }

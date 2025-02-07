@@ -4,12 +4,20 @@
 #include "ltypes.h"
 
 typedef list_t globals_t;
+typedef struct lexpr_t lexpr_t;
 
-typedef enum { LEXPK_LITERAL } lexpr_kind_t;
+typedef enum {
+  LEXPK_LITERAL,
+  LEXPK_BINARY,
+} lexpr_kind_t;
 
-typedef enum { VT_UNTYPED, VT_FLOAT, VT_INT } value_type_t;
+typedef enum {
+  VT_UNTYPED,
+  VT_FLOAT,
+  VT_INT,
+} value_type_t;
 
-typedef struct {
+struct lexpr_t {
   lexpr_kind_t kind;
   union {
     struct {
@@ -19,8 +27,12 @@ typedef struct {
         s64 ival;
       };
     } literal;
+    struct {
+      lexpr_t *left;
+      lexpr_t *right;
+    } binary;
   };
-} lexpr_t;
+};
 
 lexpr_t *new_lexpr(lexpr_kind_t kind);
 void lexpr_free(lexpr_t *expr);

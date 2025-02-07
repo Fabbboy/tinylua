@@ -17,6 +17,16 @@ lexpr_t *new_lexpr(lexpr_kind_t kind) {
 };
 void lexpr_free(lexpr_t *expr) {
   CHECK_NULL(expr, );
+
+  switch (expr->kind) {
+  case LEXPK_LITERAL:
+    break;
+  case LEXPK_BINARY:
+    lexpr_free(expr->binary.left);
+    lexpr_free(expr->binary.right);
+    break;
+  }
+
   xfree(expr);
 };
 
@@ -31,6 +41,6 @@ void lvar_stmt_free(void *item) {
   CHECK_NULL(item, );
 
   lvar_stmt *stmt = (lvar_stmt *)item;
-  xfree(stmt->val);
+  lexpr_free(stmt->val);
   xfree(stmt);
 };
