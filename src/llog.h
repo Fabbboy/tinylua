@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stddef.h>
+#include <stdlib.h>
 
 typedef enum {
   DEBUG,
@@ -13,6 +14,7 @@ void llog(llog_level_t level, const char *fmt, ...);
   if (X == NULL) {                                                             \
     llog(ERROR, "Provided NULL argument to \"%s\" at %s:%d\n", #X, __FILE__,   \
          __LINE__);                                                            \
+    abort();                                                                   \
     return Y;                                                                  \
   }
 

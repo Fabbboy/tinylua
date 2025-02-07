@@ -9,4 +9,4 @@ typedef struct {
 } lparser_t;
 
 void parser_init(lparser_t *parser, llexer_t *lexer);
-void parser_parse(lparser_t* parser);
+void parser_parse(lparser_t *parser);

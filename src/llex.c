@@ -19,6 +19,12 @@ static struct {
     {0, "local", KIND_LOCAL},
 };
 
+const char *kind_names[] = {
+#define X(a) #a,
+    KIND_LIST
+#undef X
+};
+
 tok_t new_token(kind_t type, char *start, size_t len) {
   tok_t tok;
   tok.type = type;
@@ -141,15 +147,16 @@ void lexer_init(llexer_t *lexer, const char *src, u32 len) {
   lexer->length = len;
   lexer->pos = 0;
   lexer->ptr = NULL;
+  for (int i = 0; i < KEYWORDS_COUNT; i++) {
+    keyword_lookup[i].key = hash(keyword_lookup[i].inter);
+    DEBUG_LOG("- %s: %d\n", keyword_lookup[i].inter, keyword_lookup[i].key);
+  }
+
   lexer_lex(lexer);
   DEBUG_LOG("Setting nextTok\n");
   lexer->currTok = new_token(KIND_EOF, NULL, 0);
   DEBUG_LOG("length of input source: %d\n", len);
   DEBUG_LOG("Hash table:\n");
-  for (int i = 0; i < KEYWORDS_COUNT; i++) {
-    keyword_lookup[i].key = hash(keyword_lookup[i].inter);
-    DEBUG_LOG("- %s: %d\n", keyword_lookup[i].inter, keyword_lookup[i].key);
-  }
 };
 
 kind_t lexer_next(llexer_t *lexer) {

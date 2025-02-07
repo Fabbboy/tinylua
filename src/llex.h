@@ -2,15 +2,23 @@
 
 #include "ltypes.h"
 #include <stddef.h>
+
+#define KIND_LIST                                                              \
+  X(EOF)                                                                       \
+  X(ERR)                                                                       \
+  X(IDENT)                                                                     \
+  X(NUMBER)                                                                    \
+  X(DECIMAL)                                                                   \
+  X(LOCAL)                                                                     \
+  X(ASSIGN)
+
 typedef enum {
-  KIND_EOF,
-  KIND_ERR,
-  KIND_IDENT,
-  KIND_NUMBER,
-  KIND_DECIMAL,
-  KIND_LOCAL,
-  KIND_ASSIGN,
+#define X(A) KIND_##A,
+  KIND_LIST
+#undef X
 } kind_t;
+
+extern const char *kind_names[];
 
 typedef struct {
   kind_t type;
@@ -32,4 +40,4 @@ typedef struct {
 
 void lexer_init(llexer_t *lexer, const char *src, u32 len);
 kind_t lexer_next(llexer_t *lexer);
-kind_t lexer_peek(llexer_t* lexer);
+kind_t lexer_peek(llexer_t *lexer);
