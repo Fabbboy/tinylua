@@ -1,4 +1,8 @@
 #include "ltypes.h"
+#include "llog.h"
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 u32 hash(const char *str) {
   u32 base = 5381;
@@ -19,4 +23,66 @@ u32 hash_len(const char *str, u32 len) {
   }
 
   return base;
+};
+
+void *xmalloc(size_t len) {
+  void *alloc = malloc(len);
+  if (alloc == NULL) {
+    ERROR_LOG("Failed to allocate memory\n");
+    abort();
+  }
+
+  return alloc;
+};
+
+void xfree(void *ptr) {
+  if (ptr == NULL)
+    return;
+
+  free(ptr);
+};
+
+void *xrealloc(void *ptr, size_t newsize) {
+  void *alloc = realloc(ptr, newsize);
+  if (alloc == NULL) {
+    ERROR_LOG("Failed to reallocate memory\n");
+    abort();
+  }
+
+  return alloc;
+};
+
+fbuffer_t new_fbuf(size_t init) {
+  fbuffer_t buf;
+  buf.cap = init;
+  buf.length = 0;
+  buf.buf = xmalloc(init);
+
+  return buf;
+};
+
+void fbuf_write(fbuffer_t *buf, char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  int len = vsnprintf(NULL, 0, format, args);
+  va_end(args);
+
+  if (buf->length + len >= buf->cap) {
+    buf->cap = buf->cap * 2;
+    buf->buf = xrealloc(buf->buf, buf->cap);
+  }
+
+  va_start(args, format);
+  vsnprintf(buf->buf + buf->length, len + 1, format, args);
+  va_end(args);
+
+  buf->length += len;
+};
+
+char *fbuf_get(fbuffer_t *buf) { return buf->buf; };
+
+void fbuf_free(fbuffer_t *buf) {
+  CHECK_NULL(buf, );
+
+  xfree(buf->buf);
 };
