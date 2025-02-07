@@ -1,6 +1,7 @@
 #include "ltypes.h"
 #include "llog.h"
 #include <stdarg.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -89,4 +90,31 @@ void fbuf_free(fbuffer_t *buf) {
   CHECK_NULL(buf, );
 
   xfree(buf->buf);
+};
+
+list_t new_list(size_t init) {
+  list_t l;
+  l.cap = init;
+  l.length = 0;
+  l.items = xmalloc(init * sizeof(void *));
+  return l;
+};
+
+void list_push(list_t *list, void *item) {
+  if (list->length >= list->cap) {
+    list->cap = list->cap * 2;
+    list->items = xrealloc(list->items, list->cap * sizeof(void *));
+  }
+
+  list->items[list->length++] = item;
+};
+
+void list_free(list_t *list, void (*item_free)(void *)) {
+  if (item_free != NULL) {
+    for (size_t i = 0; i < list->length; i++) {
+      item_free(list->items[i]);
+    }
+  }
+
+  xfree(list->items);
 };

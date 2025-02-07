@@ -1,6 +1,8 @@
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
 
+#include "last.h"
 #include "llex.h"
 #include "lparse.h"
 int main() {
@@ -11,13 +13,12 @@ int main() {
   lexer_init(&lexer, source, sizeof(source));
   parser_init(&parser, &lexer);
   parser_parse(&parser);
-  parser_free(&parser);
+  last_t ast = parser.ast;
+  for (size_t i = 0; i < ast.globals.length; i++) {
+    lvar_assign *assign = ast.globals.items[i];
+    printf("Name: %.*s, Value: %f\n", (u32)assign->name.len, assign->name.start,
+           assign->val.fval);
+  }
 
-  /*   while (true) {
-      kind_t k = lexer_next(&lexer);
-      tok_t t = lexer.currTok;
-      printf("Tok: kind: %d, val: %.*s\n", k, (u32)t.len, t.start);
-      if (k == KIND_EOF)
-        break;
-    } */
+  parser_free(&parser);
 }

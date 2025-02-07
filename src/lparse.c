@@ -62,4 +62,5 @@ void parser_parse(lparser_t *parser) {
 void parser_free(lparser_t *parser) {
   CHECK_NULL(parser, );
   fbuf_free(&parser->errBuf);
+  ast_free(&parser->ast);
 };
