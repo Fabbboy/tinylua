@@ -26,3 +26,8 @@ void llog(llog_level_t level, const char *fmt, ...);
 
 #define WARN_LOG(...) llog(WARN, __VA_ARGS__)
 #define ERROR_LOG(...) llog(ERROR, __VA_ARGS__)
+#define UNREACHABLE                                                            \
+  {                                                                            \
+    ERROR_LOG("Reached unreachable code in %s:%d\n", __FILE__, __LINE__);      \
+    abort();                                                                   \
+  }

@@ -145,8 +145,10 @@ void lexer_init(llexer_t *lexer, const char *src, u32 len) {
 
   lexer->src = src;
   lexer->length = len;
+  DEBUG_LOG("length of input source: %d\n", len);
   lexer->pos = 0;
   lexer->ptr = NULL;
+  DEBUG_LOG("Hash table:\n");
   for (int i = 0; i < KEYWORDS_COUNT; i++) {
     keyword_lookup[i].key = hash(keyword_lookup[i].inter);
     DEBUG_LOG("- %s: %d\n", keyword_lookup[i].inter, keyword_lookup[i].key);
@@ -155,8 +157,6 @@ void lexer_init(llexer_t *lexer, const char *src, u32 len) {
   lexer_lex(lexer);
   DEBUG_LOG("Setting nextTok\n");
   lexer->currTok = new_token(KIND_EOF, NULL, 0);
-  DEBUG_LOG("length of input source: %d\n", len);
-  DEBUG_LOG("Hash table:\n");
 };
 
 kind_t lexer_next(llexer_t *lexer) {

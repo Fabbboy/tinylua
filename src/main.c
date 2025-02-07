@@ -4,7 +4,7 @@
 #include "llex.h"
 #include "lparse.h"
 int main() {
-  const char source[] = "asd local test = 123.2";
+  const char source[] = "local test = 123.2";
 
   llexer_t lexer;
   lparser_t parser;

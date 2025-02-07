@@ -41,11 +41,20 @@ void parser_parse(lparser_t *parser) {
   tok_t tok;
   kind_t expected[] = {KIND_EOF, KIND_LOCAL};
   u32 expected_len = sizeof(expected) / sizeof(expected[0]);
-  if (next(parser, &tok, expected, expected_len) == false) {
-    DEBUG_LOG("ERR\n");
-  } else {
-    DEBUG_LOG("SUC\n");
-  }
+  do {
+    bool res = next(parser, &tok, expected, expected_len);
+    if (!res)
+      continue;
+
+    if (tok.type == KIND_EOF)
+      break;
+
+    switch (tok.type) {
+    default:
+      UNREACHABLE
+    }
+
+  } while (tok.type != KIND_EOF);
 
   return;
 }
