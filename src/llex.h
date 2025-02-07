@@ -10,7 +10,11 @@
   X(NUMBER)                                                                    \
   X(DECIMAL)                                                                   \
   X(LOCAL)                                                                     \
-  X(ASSIGN)
+  X(ASSIGN)                                                                    \
+  X(PLUS)                                                                      \
+  X(MINUS)                                                                     \
+  X(STAR)                                                                      \
+  X(SLASH)
 
 typedef enum {
 #define X(A) KIND_##A,

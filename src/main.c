@@ -6,7 +6,7 @@
 #include "llex.h"
 #include "lparse.h"
 int main() {
-  const char source[] = "local test = 123.123";
+  const char source[] = "local test = 123.123 + 32";
 
   llexer_t lexer;
   lparser_t parser;
