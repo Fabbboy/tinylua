@@ -6,7 +6,7 @@
 #include "llex.h"
 #include "lparse.h"
 int main() {
-  const char source[] = "local test = 123.2";
+  const char source[] = "local test = 123.123";
 
   llexer_t lexer;
   lparser_t parser;
@@ -15,9 +15,9 @@ int main() {
   parser_parse(&parser);
   last_t ast = parser.ast;
   for (size_t i = 0; i < ast.globals.length; i++) {
-    lvar_assign *assign = ast.globals.items[i];
+    lvar_stmt *assign = ast.globals.items[i];
     printf("Name: %.*s, Value: %f\n", (u32)assign->name.len, assign->name.start,
-           assign->val.fval);
+           assign->val->literal.fval);
   }
 
   parser_free(&parser);
