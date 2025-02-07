@@ -16,15 +16,14 @@ static bool next(lparser_t *parser, tok_t *result, kind_t expected[],
     }
   }
 
-  fbuffer_t buf = new_fbuf(256);
-  fbuf_write(&buf, "Expected one of [");
+  fbuf_write(&parser->errBuf, "Expected one of [");
   for (u32 i = 0; i < expected_len; i++) {
-    fbuf_write(&buf, "%s%s", kind_names[expected[i]],
+    fbuf_write(&parser->errBuf, "%s%s", kind_names[expected[i]],
                (i == expected_len - 1) ? "" : ", ");
   }
-  fbuf_write(&buf, "], but got: %s\n", kind_names[got]);
-  ERROR_LOG("%s", fbuf_get(&buf));
-  fbuf_free(&buf);
+  fbuf_write(&parser->errBuf, "], but got: %s\n", kind_names[got]);
+  ERROR_LOG("%s", fbuf_get(&parser->errBuf));
+  fbuf_reset(&parser->errBuf);
   return false;
 }
 
@@ -34,6 +33,7 @@ void parser_init(lparser_t *parser, llexer_t *lexer) {
 
   parser->lexer = lexer;
   parser->ast = new_ast();
+  parser->errBuf = new_fbuf(256);
 };
 
 void parser_parse(lparser_t *parser) {
@@ -49,3 +49,8 @@ void parser_parse(lparser_t *parser) {
 
   return;
 }
+
+void parser_free(lparser_t *parser) {
+  CHECK_NULL(parser, );
+  fbuf_free(&parser->errBuf);
+};

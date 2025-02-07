@@ -80,6 +80,10 @@ void fbuf_write(fbuffer_t *buf, char *format, ...) {
 };
 
 char *fbuf_get(fbuffer_t *buf) { return buf->buf; };
+void fbuf_reset(fbuffer_t *buf) {
+  buf->length = 0;
+  buf->buf[0] = '\0';
+}
 
 void fbuf_free(fbuffer_t *buf) {
   CHECK_NULL(buf, );

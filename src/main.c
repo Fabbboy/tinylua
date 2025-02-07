@@ -11,6 +11,7 @@ int main() {
   lexer_init(&lexer, source, sizeof(source));
   parser_init(&parser, &lexer);
   parser_parse(&parser);
+  parser_free(&parser);
 
   /*   while (true) {
       kind_t k = lexer_next(&lexer);
