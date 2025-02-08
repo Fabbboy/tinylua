@@ -1,4 +1,5 @@
 #include "lanalyzer.h"
+#include "leval.h"
 #include "llex.h"
 #include "llog.h"
 #include "ltypes.h"
@@ -52,8 +53,21 @@ lanalyzer_err_t *new_sym_undef_err(tok_t sym) {
   err->sym_undef.sym = sym;
   return err;
 };
+
+lanalyzer_err_t *new_internal_err(char *msg) {
+  lanalyzer_err_t *err = xmalloc(sizeof(lanalyzer_err_t));
+  err->kind = AEK_INTERNAL;
+  err->internal.msg = msg;
+  return err;
+};
+
 void analyzer_err_free(void *err) {
   CHECK_NULL(err, );
+  lanalyzer_err_t *err_ = (lanalyzer_err_t *)err;
+  if (err_->kind == AEK_INTERNAL) {
+    xfree(err_->internal.msg);
+  }
+
   xfree(err);
 };
 
@@ -112,6 +126,12 @@ static lvalue_type_t infer_type(lanalyzer_t *ana, lexpr_t *expr) {
   return VT_UNTYPED;
 };
 
+lanalyzer_err_t *new_div_by_zero_err() {
+  lanalyzer_err_t *err = xmalloc(sizeof(lanalyzer_err_t));
+  err->kind = AEK_DIV_BY_ZERO;
+  return err;
+};
+
 void analyzer_init(lanalyzer_t *analyzer) {
   CHECK_NULL(analyzer, );
   analyzer->errs = new_list(8);
@@ -119,7 +139,7 @@ void analyzer_init(lanalyzer_t *analyzer) {
   analyzer->current = analyzer->global;
 };
 
-void ana_infer_type(lanalyzer_t *ana, lvar_stmt *var) {
+void ana_infer_type(lanalyzer_t *ana, lvar_stmt *var, bool eval) {
   CHECK_NULL(ana, );
   CHECK_NULL(var, );
 
@@ -137,6 +157,13 @@ void ana_infer_type(lanalyzer_t *ana, lvar_stmt *var) {
     lanalyzer_err_t *err = new_type_mismatch_err(var->type, type);
     list_push(&ana->errs, err);
   }
+
+  if (eval) {
+    lanalyzer_err_t *err = eval_var(ana, var);
+    if (err != NULL) {
+      list_push(&ana->errs, err);
+    }
+  }
 };
 
 void analyzer_err_string(lanalyzer_err_t *err, fbuffer_t *buf) {
@@ -152,6 +179,12 @@ void analyzer_err_string(lanalyzer_err_t *err, fbuffer_t *buf) {
     fbuf_write(buf, "Type mismatch: expected %s, got %s",
                vt_names[err->type_mismatch.expected],
                vt_names[err->type_mismatch.got]);
+    break;
+  case AEK_INTERNAL:
+    fbuf_write(buf, "Internal error: %s", err->internal.msg);
+    break;
+  case AEK_DIV_BY_ZERO:
+    fbuf_write(buf, "Division by zero");
     break;
   }
 };

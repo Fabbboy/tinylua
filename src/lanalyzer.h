@@ -3,9 +3,12 @@
 #include "last.h"
 #include "llex.h"
 #include "ltypes.h"
+#include <stdbool.h>
 typedef enum {
   AEK_SYM_UNDEFINED,
   AEK_TYPE_MISMATCH,
+  AEK_DIV_BY_ZERO,
+  AEK_INTERNAL
 } lanalyzer_err_kind_t;
 
 typedef struct {
@@ -18,11 +21,19 @@ typedef struct {
       lvalue_type_t expected;
       lvalue_type_t got;
     } type_mismatch;
+    struct {
+      char *msg;
+    } internal;
+    struct {
+    } div_by_zero;
   };
 } lanalyzer_err_t;
 
 lanalyzer_err_t *new_sym_undef_err(tok_t sym);
-lanalyzer_err_t *new_type_mismatch_err(lvalue_type_t expected, lvalue_type_t got);
+lanalyzer_err_t *new_type_mismatch_err(lvalue_type_t expected,
+                                       lvalue_type_t got);
+lanalyzer_err_t *new_div_by_zero_err();
+lanalyzer_err_t *new_internal_err(char *msg);
 void analyzer_err_string(lanalyzer_err_t *err, fbuffer_t *buf);
 void analyzer_err_free(void *err);
 
@@ -54,5 +65,5 @@ typedef struct {
 } lanalyzer_t;
 
 void analyzer_init(lanalyzer_t *analyzer);
-void ana_infer_type(lanalyzer_t *ana, lvar_stmt *var);
+void ana_infer_type(lanalyzer_t *ana, lvar_stmt *var, bool eval);
 void analyzer_free(lanalyzer_t *analyzer);
