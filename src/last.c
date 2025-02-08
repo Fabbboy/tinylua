@@ -63,16 +63,17 @@ void lvar_stmt_string(lvar_stmt *stmt, fbuffer_t *buf) {
   CHECK_NULL(stmt, );
   CHECK_NULL(buf, );
 
-  fbuf_write(buf, "Variable { name: %.*s, value: ", stmt->name.len,
-             stmt->name.start);
+  fbuf_write(buf, "Variable { name: %.*s, linkage: %d, value: ", stmt->name.len,
+             stmt->name.start, stmt->link);
   lexpr_string(stmt->val, buf);
   fbuf_write(buf, " }");
 };
 
-lvar_stmt *new_lvar_stmt(tok_t name, lexpr_t *val) {
+lvar_stmt *new_lvar_stmt(tok_t name, lexpr_t *val, linkage_t link) {
   lvar_stmt *stmt = xmalloc(sizeof(lvar_stmt));
   stmt->name = name;
   stmt->val = val;
+  stmt->link = link;
   return stmt;
 };
 

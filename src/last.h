@@ -46,12 +46,18 @@ lexpr_t *new_lexpr(lexpr_kind_t kind);
 void lexpr_free(lexpr_t *expr);
 void lexpr_string(lexpr_t *expr, fbuffer_t *buf);
 
+typedef enum {
+  LINK_EXTERNAL,
+  LINK_INTERNAL,
+} linkage_t;
+
 typedef struct {
   tok_t name;
   lexpr_t *val;
+  linkage_t link;
 } lvar_stmt;
 
-lvar_stmt *new_lvar_stmt(tok_t name, lexpr_t *val);
+lvar_stmt *new_lvar_stmt(tok_t name, lexpr_t *val, linkage_t link);
 void lvar_stmt_free(void *item);
 void lvar_stmt_string(lvar_stmt *stmt, fbuffer_t *buf);
 

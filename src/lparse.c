@@ -160,7 +160,7 @@ static lexpr_t *expr(lparser_t *parser) {
   return lhs;
 }
 
-static lvar_stmt *varstmt(lparser_t *parser) {
+static lvar_stmt *varstmt(lparser_t *parser, linkage_t link) {
   EXP_LIST(exp_name, KIND_IDENT);
   tok_t name;
   tok_t assign;
@@ -179,7 +179,7 @@ static lvar_stmt *varstmt(lparser_t *parser) {
   if (val == NULL) {
     return NULL;
   }
-  return new_lvar_stmt(name, val);
+  return new_lvar_stmt(name, val, link);
 }
 
 void parser_init(lparser_t *parser, llexer_t *lexer) {
@@ -194,7 +194,7 @@ void parser_init(lparser_t *parser, llexer_t *lexer) {
 void parser_parse(lparser_t *parser) {
   CHECK_NULL(parser, )
   tok_t tok;
-  kind_t expected[] = {KIND_EOF, KIND_LOCAL};
+  kind_t expected[] = {KIND_EOF, KIND_LOCAL, KIND_IDENT};
   u32 expected_len = sizeof(expected) / sizeof(expected[0]);
   union {
     lvar_stmt *var;
@@ -209,7 +209,7 @@ void parser_parse(lparser_t *parser) {
 
     switch (tok.type) {
     case KIND_LOCAL:
-      stmt.var = varstmt(parser);
+      stmt.var = varstmt(parser, LINK_INTERNAL);
       if (stmt.var == NULL) {
         DEBUG_LOG("Failed to parse varstmt\n");
         sync(parser, expected, expected_len);
@@ -217,6 +217,21 @@ void parser_parse(lparser_t *parser) {
       }
       list_push(&parser->ast.globals, stmt.var);
       break;
+    case KIND_IDENT: {
+      EXP_LIST(exp_assign, KIND_ASSIGN);
+      if (peek(parser, exp_assign, exp_assign_len)) {
+        stmt.var = varstmt(parser, LINK_EXTERNAL);
+        if (stmt.var == NULL) {
+          DEBUG_LOG("Failed to parse varstmt\n");
+          sync(parser, expected, expected_len);
+          continue;
+        }
+        list_push(&parser->ast.globals, stmt.var);
+      } else {
+        ERROR_LOG("Unexpected token: %s\n", kind_names[tok.type]);
+        sync(parser, expected, expected_len);
+      }
+    } break;
     default:
       UNREACHABLE
     }
