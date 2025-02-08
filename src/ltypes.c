@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 u32 hash(const char *str) {
   u32 base = 5381;
@@ -51,6 +52,14 @@ void *xrealloc(void *ptr, size_t newsize) {
   }
 
   return alloc;
+};
+
+char *xstrdup(const char *str) {
+  size_t len = strlen(str);
+  char *dup = xmalloc(len + 1);
+  memcpy(dup, str, len);
+  dup[len] = '\0';
+  return dup;
 };
 
 fbuffer_t new_fbuf(size_t init) {

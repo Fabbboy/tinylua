@@ -19,6 +19,7 @@ typedef struct {
 void *xmalloc(size_t len);
 void xfree(void *ptr);
 void *xrealloc(void *ptr, size_t newsize);
+char* xstrdup(const char* str);
 
 fbuffer_t new_fbuf(size_t init);
 void fbuf_write(fbuffer_t *buf, char *format, ...);
