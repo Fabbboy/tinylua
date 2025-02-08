@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "errs.h"
+#include "lerrs.h"
 #include "lanalyzer.h"
 #include "last.h"
 #include "llex.h"

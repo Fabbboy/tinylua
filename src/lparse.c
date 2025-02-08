@@ -1,5 +1,4 @@
 #include "lparse.h"
-#include "errs.h"
 #include "lanalyzer.h"
 #include "last.h"
 #include "llex.h"
