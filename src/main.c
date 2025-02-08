@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "errs.h"
 #include "last.h"
 #include "llex.h"
 #include "llog.h"
@@ -47,7 +48,19 @@ int main(int argc, char const *argv[]) {
   lparser_t parser;
   lexer_init(&lexer, source, fsize);
   parser_init(&parser, &lexer);
-  parser_parse(&parser);
+  err_list_t *errs = parser_parse(&parser);
+  if (errs != NULL) {
+    for (size_t i = 0; i < errs->length; i++) {
+      lparse_err_t *err = errs->items[i];
+      fbuffer_t buf = new_fbuf(256);
+      parse_err_string(err, &buf);
+      ERROR_LOG("%s\n", fbuf_get(&buf));
+      fbuf_free(&buf);
+    }
+
+    goto cleanup;
+  }
+
   last_t ast = parser.ast;
   fbuffer_t buf = new_fbuf(256);
   for (size_t i = 0; i < ast.globals.length; i++) {
@@ -59,7 +72,7 @@ int main(int argc, char const *argv[]) {
   }
   fbuf_free(&buf);
 
-  // Cleanup
+cleanup:
   if (munmap(source, fsize) < 0) {
     perror("Failed to unmap file");
   }

@@ -1,4 +1,5 @@
 #include "lparse.h"
+#include "errs.h"
 #include "last.h"
 #include "llex.h"
 #include "llog.h"
@@ -29,10 +30,21 @@ static lexpr_t *factor(lparser_t *parser);
 static lexpr_t *term(lparser_t *parser);
 static lexpr_t *expr(lparser_t *parser);
 
-static bool next(lparser_t *parser, tok_t *result, kind_t expected[],
+static bool next(lparser_t *parser, tok_t *result, kind_t *expected,
                  u32 expected_len) {
+  if (expected_len > MAX_EXPECTED_KINDS) {
+    ERROR_LOG("Expected list too long\n");
+    expected_len = MAX_EXPECTED_KINDS;
+  }
+
   kind_t got = lexer_next(parser->lexer);
   *result = parser->lexer->currTok;
+
+  if (got == KIND_ERR) {
+    lparse_err_t *err = new_lexer_err(*result);
+    list_push(&parser->errs, err);
+    return false;
+  }
 
   for (u32 i = 0; i < expected_len; i++) {
     if (expected[i] == got) {
@@ -40,14 +52,9 @@ static bool next(lparser_t *parser, tok_t *result, kind_t expected[],
     }
   }
 
-  fbuf_write(&parser->errBuf, "Expected one of [");
-  for (u32 i = 0; i < expected_len; i++) {
-    fbuf_write(&parser->errBuf, "%s%s", kind_names[expected[i]],
-               (i == expected_len - 1) ? "" : ", ");
-  }
-  fbuf_write(&parser->errBuf, "], but got: %s\n", kind_names[got]);
-  ERROR_LOG("%s", fbuf_get(&parser->errBuf));
-  fbuf_reset(&parser->errBuf);
+  lparse_err_t *err = new_unexpected_err(*result, expected, expected_len);
+  list_push(&parser->errs, err);
+
   return false;
 }
 
@@ -178,7 +185,11 @@ static lvar_stmt *varstmt(lparser_t *parser, linkage_t link) {
   EXP_LIST(exp_colon, KIND_COLON);
   value_type_t type = VT_UNTYPED;
   if (peek(parser, exp_colon, exp_colon_len)) {
-    lexer_next(parser->lexer);
+    res = next(parser, &assign, exp_colon, exp_colon_len);
+    if (!res) {
+      return NULL;
+    }
+
     EXP_LIST(exp_type, KIND_TYPE);
     tok_t type_tok;
     res = next(parser, &type_tok, exp_type, exp_type_len);
@@ -207,14 +218,13 @@ void parser_init(lparser_t *parser, llexer_t *lexer) {
 
   parser->lexer = lexer;
   parser->ast = new_ast();
-  parser->errBuf = new_fbuf(256);
+  parser->errs = new_list(8);
 };
 
-void parser_parse(lparser_t *parser) {
-  CHECK_NULL(parser, )
+err_list_t *parser_parse(lparser_t *parser) {
+  CHECK_NULL(parser, NULL);
   tok_t tok;
-  kind_t expected[] = {KIND_EOF, KIND_LOCAL, KIND_IDENT};
-  u32 expected_len = sizeof(expected) / sizeof(expected[0]);
+  EXP_LIST(expected, KIND_EOF, KIND_LOCAL, KIND_IDENT);
   union {
     lvar_stmt *var;
   } stmt;
@@ -247,21 +257,26 @@ void parser_parse(lparser_t *parser) {
         }
         list_push(&parser->ast.globals, stmt.var);
       } else {
-        ERROR_LOG("Unexpected token: %s\n", kind_names[tok.type]);
+        lparse_err_t *err = new_unexpected_err(tok, expected, expected_len);
+        list_push(&parser->errs, err);
         sync(parser, expected, expected_len);
       }
     } break;
     default:
-      UNREACHABLE
+      UNREACHABLE;
     }
 
   } while (tok.type != KIND_EOF);
 
-  return;
+  if (list_len(&parser->errs) > 0) {
+    return &parser->errs;
+  }
+
+  return NULL;
 }
 
 void parser_free(lparser_t *parser) {
   CHECK_NULL(parser, );
-  fbuf_free(&parser->errBuf);
+  list_free(&parser->errs, parse_err_free);
   ast_free(&parser->ast);
 };
