@@ -125,6 +125,9 @@ void ana_infer_type(lanalyzer_t *ana, lvar_stmt *var) {
 
   scope_add(ana->current, var);
   lvalue_type_t type = infer_type(ana, var->val);
+  if (type == VT_UNTYPED) {
+    return;
+  }
 
   if (var->type == VT_UNTYPED) {
     var->type = type;
@@ -142,11 +145,11 @@ void analyzer_err_string(lanalyzer_err_t *err, fbuffer_t *buf) {
 
   switch (err->kind) {
   case AEK_SYM_UNDEFINED:
-    fbuf_write(buf, "Symbol '%.*s' is undefined\n", err->sym_undef.sym.len,
+    fbuf_write(buf, "Symbol '%.*s' is undefined", err->sym_undef.sym.len,
                err->sym_undef.sym.start);
     break;
   case AEK_TYPE_MISMATCH:
-    fbuf_write(buf, "Type mismatch: expected %s, got %s\n",
+    fbuf_write(buf, "Type mismatch: expected %s, got %s",
                vt_names[err->type_mismatch.expected],
                vt_names[err->type_mismatch.got]);
     break;
