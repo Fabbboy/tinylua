@@ -8,6 +8,7 @@ typedef struct lexpr_t lexpr_t;
 
 typedef enum {
   LEXPK_LITERAL,
+  LEXPK_VAR,
   LEXPK_BINARY,
 } lexpr_kind_t;
 
@@ -28,6 +29,9 @@ struct lexpr_t {
         s64 ival;
       };
     } literal;
+    struct {
+      tok_t name;
+    } variable;
     struct {
       bin_op_t op;
       lexpr_t *left;

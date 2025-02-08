@@ -109,6 +109,14 @@ void list_push(list_t *list, void *item) {
   list->items[list->length++] = item;
 };
 
+void *list_get(list_t *list, size_t idx) {
+  if (idx >= list->length) {
+    return NULL;
+  }
+
+  return list->items[idx];
+};
+
 void list_free(list_t *list, void (*item_free)(void *)) {
   if (item_free != NULL) {
     for (size_t i = 0; i < list->length; i++) {

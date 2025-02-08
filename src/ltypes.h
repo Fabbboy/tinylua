@@ -36,4 +36,5 @@ typedef struct {
 list_t new_list(size_t init);
 void list_push(list_t *list, void *item);
 void list_free(list_t *list, void (*item_free)(void *));
+void* list_get(list_t* list, size_t idx);
 static inline u32 list_len(list_t *list) { return list->length; }

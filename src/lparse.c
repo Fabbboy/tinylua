@@ -89,7 +89,7 @@ static void sync(lparser_t *parser, kind_t expected[], u32 expected_len) {
 }
 
 static lexpr_t *factor(lparser_t *parser) {
-  EXP_LIST(exp_number, KIND_NUMBER, KIND_DECIMAL, KIND_LPAREN);
+  EXP_LIST(exp_number, KIND_NUMBER, KIND_DECIMAL, KIND_LPAREN, KIND_IDENT);
   tok_t tok;
   if (!next(parser, &tok, exp_number, exp_number_len)) {
     return NULL;
@@ -112,6 +112,10 @@ static lexpr_t *factor(lparser_t *parser) {
       ERROR_LOG("Expected ')' after expression\n");
       return NULL;
     }
+    break;
+  case KIND_IDENT:
+    _expr->kind = LEXPK_VAR;
+    _expr->variable.name = tok;
     break;
   default:
     UNREACHABLE

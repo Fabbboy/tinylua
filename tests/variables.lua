@@ -1,3 +1,4 @@
-local hello: int = 123.2
+local hello = 123.2
 -- hell = 12332.2
-hell2 = 22.2
+hell2 = hellol + 22
+local hell3 = 12.2 + 222

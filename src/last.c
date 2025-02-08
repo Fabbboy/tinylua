@@ -19,6 +19,8 @@ void lexpr_free(lexpr_t *expr) {
   CHECK_NULL(expr, );
 
   switch (expr->kind) {
+  case LEXPK_VAR:
+    break;
   case LEXPK_LITERAL:
     break;
   case LEXPK_BINARY:
@@ -55,6 +57,10 @@ void lexpr_string(lexpr_t *expr, fbuffer_t *buf) {
     fbuf_write(buf, ", right: ");
     lexpr_string(expr->binary.right, buf);
     fbuf_write(buf, " }");
+    break;
+  case LEXPK_VAR:
+    fbuf_write(buf, "Variable { name: %.*s }", expr->variable.name.len,
+               expr->variable.name.start);
     break;
   }
 };

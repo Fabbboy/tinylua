@@ -64,6 +64,21 @@ int main(int argc, char const *argv[]) {
     goto cleanup;
   }
 
+  laerr_list_t *aerrs = &analyzer.errs;
+  if (aerrs->length > 0) {
+    for (size_t i = 0; i < aerrs->length; i++) {
+      lanalyzer_err_t *err = aerrs->items[i];
+      switch (err->kind) {
+      case AEK_SYM_UNDEFINED:
+        ERROR_LOG("Symbol '%.*s' is undefined\n", err->sym_undef.sym.len,
+                  err->sym_undef.sym.start);
+        break;
+      }
+    }
+
+    goto cleanup;
+  }
+
   last_t ast = parser.ast;
   fbuffer_t buf = new_fbuf(256);
   for (size_t i = 0; i < ast.globals.length; i++) {
