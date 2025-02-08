@@ -7,9 +7,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "lerrs.h"
 #include "lanalyzer.h"
 #include "last.h"
+#include "lerrs.h"
 #include "llex.h"
 #include "llog.h"
 #include "lparse.h"
@@ -52,13 +52,14 @@ int main(int argc, char const *argv[]) {
   analyzer_init(&analyzer);
   parser_init(&parser, &lexer, &analyzer);
   perr_list_t *errs = parser_parse(&parser);
+  fbuffer_t buf = new_fbuf(256);
+
   if (errs != NULL) {
     for (size_t i = 0; i < errs->length; i++) {
       lparse_err_t *err = errs->items[i];
-      fbuffer_t buf = new_fbuf(256);
       parse_err_string(err, &buf);
       ERROR_LOG("%s\n", fbuf_get(&buf));
-      fbuf_free(&buf);
+      fbuf_reset(&buf);
     }
 
     goto cleanup;
@@ -68,19 +69,15 @@ int main(int argc, char const *argv[]) {
   if (aerrs->length > 0) {
     for (size_t i = 0; i < aerrs->length; i++) {
       lanalyzer_err_t *err = aerrs->items[i];
-      switch (err->kind) {
-      case AEK_SYM_UNDEFINED:
-        ERROR_LOG("Symbol '%.*s' is undefined\n", err->sym_undef.sym.len,
-                  err->sym_undef.sym.start);
-        break;
-      }
+      analyzer_err_string(err, &buf);
+      ERROR_LOG("%s\n", fbuf_get(&buf));
+      fbuf_reset(&buf);
     }
 
     goto cleanup;
   }
 
   last_t ast = parser.ast;
-  fbuffer_t buf = new_fbuf(256);
   for (size_t i = 0; i < ast.globals.length; i++) {
     lvar_stmt *assign = ast.globals.items[i];
     lvar_stmt_string(assign, &buf);
@@ -88,9 +85,9 @@ int main(int argc, char const *argv[]) {
     DEBUG_LOG("Used %ld vs. Cap %ld\n", fbuf_used(&buf), buf.cap);
     fbuf_reset(&buf);
   }
-  fbuf_free(&buf);
 
 cleanup:
+  fbuf_free(&buf);
   if (munmap(source, fsize) < 0) {
     perror("Failed to unmap file");
   }

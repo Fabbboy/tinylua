@@ -28,6 +28,12 @@ const char *kind_names[] = {
 #undef X
 };
 
+const char *vt_names[] = {
+#define X(a) #a,
+    VT_LIST
+#undef X
+};
+
 tok_t new_token(kind_t type, char *start, size_t len) {
   tok_t tok;
   tok.type = type;

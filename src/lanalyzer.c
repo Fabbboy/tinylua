@@ -68,6 +68,15 @@ void namend_free(void *namend) {
   xfree(namend);
 };
 
+lanalyzer_err_t *new_type_mismatch_err(lvalue_type_t expected,
+                                       lvalue_type_t got) {
+  lanalyzer_err_t *err = xmalloc(sizeof(lanalyzer_err_t));
+  err->kind = AEK_TYPE_MISMATCH;
+  err->type_mismatch.expected = expected;
+  err->type_mismatch.got = got;
+  return err;
+};
+
 static lvalue_type_t infer_type(lanalyzer_t *ana, lexpr_t *expr) {
   CHECK_NULL(expr, VT_UNTYPED);
 
@@ -115,14 +124,33 @@ void ana_infer_type(lanalyzer_t *ana, lvar_stmt *var) {
   CHECK_NULL(var, );
 
   scope_add(ana->current, var);
+  lvalue_type_t type = infer_type(ana, var->val);
 
-  if (var->type != VT_UNTYPED) {
-    return;
+  if (var->type == VT_UNTYPED) {
+    var->type = type;
   }
 
-  lvalue_type_t type = infer_type(ana, var->val);
-  var->type = type;
-  DEBUG_LOG("Inferred type: %d\n", type);
+  if (var->type != type) {
+    lanalyzer_err_t *err = new_type_mismatch_err(var->type, type);
+    list_push(&ana->errs, err);
+  }
+};
+
+void analyzer_err_string(lanalyzer_err_t *err, fbuffer_t *buf) {
+  CHECK_NULL(err, );
+  CHECK_NULL(buf, );
+
+  switch (err->kind) {
+  case AEK_SYM_UNDEFINED:
+    fbuf_write(buf, "Symbol '%.*s' is undefined\n", err->sym_undef.sym.len,
+               err->sym_undef.sym.start);
+    break;
+  case AEK_TYPE_MISMATCH:
+    fbuf_write(buf, "Type mismatch: expected %s, got %s\n",
+               vt_names[err->type_mismatch.expected],
+               vt_names[err->type_mismatch.got]);
+    break;
+  }
 };
 
 void analyzer_free(lanalyzer_t *analyzer) {

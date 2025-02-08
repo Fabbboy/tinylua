@@ -27,11 +27,18 @@ typedef enum {
 
 extern const char *kind_names[];
 
+#define VT_LIST                                                                \
+  X(UNTYPED)                                                                   \
+  X(FLOAT)                                                                     \
+  X(INT)
+
 typedef enum {
-  VT_UNTYPED,
-  VT_FLOAT,
-  VT_INT,
+#define X(A) VT_##A,
+  VT_LIST
+#undef X
 } lvalue_type_t;
+
+extern const char *vt_names[];
 
 typedef struct {
   kind_t type;

@@ -5,6 +5,7 @@
 #include "ltypes.h"
 typedef enum {
   AEK_SYM_UNDEFINED,
+  AEK_TYPE_MISMATCH,
 } lanalyzer_err_kind_t;
 
 typedef struct {
@@ -13,10 +14,16 @@ typedef struct {
     struct {
       tok_t sym;
     } sym_undef;
+    struct {
+      lvalue_type_t expected;
+      lvalue_type_t got;
+    } type_mismatch;
   };
 } lanalyzer_err_t;
 
 lanalyzer_err_t *new_sym_undef_err(tok_t sym);
+lanalyzer_err_t *new_type_mismatch_err(lvalue_type_t expected, lvalue_type_t got);
+void analyzer_err_string(lanalyzer_err_t *err, fbuffer_t *buf);
 void analyzer_err_free(void *err);
 
 typedef list_t laerr_list_t;
