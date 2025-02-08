@@ -1,5 +1,6 @@
 #pragma once
 
+#include "last.h"
 #include "ltypes.h"
 typedef enum {
   TYPE_MISMATCH,
@@ -17,4 +18,5 @@ typedef struct {
 } lanalyzer_t;
 
 void analyzer_init(lanalyzer_t *analyzer);
+void ana_infer_type(lanalyzer_t* ana, lvar_stmt* var);
 void analyzer_free(lanalyzer_t *analyzer);

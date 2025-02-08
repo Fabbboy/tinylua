@@ -1,5 +1,6 @@
 #include "lparse.h"
 #include "errs.h"
+#include "lanalyzer.h"
 #include "last.h"
 #include "llex.h"
 #include "llog.h"
@@ -244,6 +245,7 @@ perr_list_t *parser_parse(lparser_t *parser) {
         sync(parser, expected, expected_len);
         continue;
       }
+      ana_infer_type(parser->analyzer, stmt.var);
       list_push(&parser->ast.globals, stmt.var);
       break;
     case KIND_IDENT:
@@ -253,6 +255,7 @@ perr_list_t *parser_parse(lparser_t *parser) {
         sync(parser, expected, expected_len);
         continue;
       }
+      ana_infer_type(parser->analyzer, stmt.var);
       list_push(&parser->ast.globals, stmt.var);
       break;
     default:
