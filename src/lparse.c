@@ -46,6 +46,10 @@ static bool next(lparser_t *parser, tok_t *result, kind_t *expected,
     return false;
   }
 
+  if (expected_len == 0) {
+    return true;
+  }
+
   for (u32 i = 0; i < expected_len; i++) {
     if (expected[i] == got) {
       return true;
@@ -70,21 +74,16 @@ static bool peek(lparser_t *parser, kind_t expected[], u32 expected_len) {
 }
 
 static void sync(lparser_t *parser, kind_t expected[], u32 expected_len) {
-  kind_t got = parser->lexer->currTok.type;
-  for (u32 i = 0; i < expected_len; i++) {
-    if (expected[i] == got) {
-      return;
-    }
-  }
-
-  while (got != KIND_EOF) {
+  tok_t curr = parser->lexer->currTok;
+  while (curr.type != KIND_EOF) {
     for (u32 i = 0; i < expected_len; i++) {
-      if (expected[i] == got) {
+      if (expected[i] == curr.type) {
         return;
       }
     }
 
-    got = lexer_next(parser->lexer);
+    lexer_next(parser->lexer);
+    curr = parser->lexer->nextTok;
   }
 }
 
@@ -246,22 +245,15 @@ err_list_t *parser_parse(lparser_t *parser) {
       }
       list_push(&parser->ast.globals, stmt.var);
       break;
-    case KIND_IDENT: {
-      EXP_LIST(exp_assign, KIND_ASSIGN);
-      if (peek(parser, exp_assign, exp_assign_len)) {
-        stmt.var = varstmt(parser, LINK_EXTERNAL);
-        if (stmt.var == NULL) {
-          DEBUG_LOG("Failed to parse varstmt\n");
-          sync(parser, expected, expected_len);
-          continue;
-        }
-        list_push(&parser->ast.globals, stmt.var);
-      } else {
-        lparse_err_t *err = new_unexpected_err(tok, expected, expected_len);
-        list_push(&parser->errs, err);
+    case KIND_IDENT:
+      stmt.var = varstmt(parser, LINK_EXTERNAL);
+      if (stmt.var == NULL) {
+        DEBUG_LOG("Failed to parse varstmt\n");
         sync(parser, expected, expected_len);
+        continue;
       }
-    } break;
+      list_push(&parser->ast.globals, stmt.var);
+      break;
     default:
       UNREACHABLE;
     }
