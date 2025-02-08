@@ -1,6 +1,9 @@
 CC ?= $(shell which gcc)
 BEAR ?= $(shell which bear)
+LLVM_CONFIG ?= $(shell which llvm-config)
 CFLAGS := -Wall -Wextra -Werror -std=c11 -g
+CFLAGS += $(shell $(LLVM_CONFIG) --cflags)
+LDLIBS := $(shell $(LLVM_CONFIG) --ldflags --libs core)
 
 SRC := src
 OBJ := obj
@@ -13,11 +16,11 @@ DEPS := $(patsubst $(SRC)/%.c,$(OBJ)/%.d,$(SRCS))
 all: prepare $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
 
 $(OBJ)/%.o: $(SRC)/%.c
-	$(CC) $(CFLAGS) -MMD -MP -c -o $@ $<
-  
+	$(CC) $(CFLAGS) $(LDLIBS) -MMD -MP -c -o $@ $< 
+
 -include $(DEPS)
 
 .PHONY: prepare

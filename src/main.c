@@ -88,7 +88,11 @@ int main(int argc, char const *argv[]) {
   }
 
   lcompiler_t compiler;
-  compiler_init(&compiler, &ast);
+  compiler_init(&compiler, &ast, "main");
+  compiler_compile(&compiler);
+  compiler_print(&compiler);
+  compiler_write(&compiler, "main.o", "x86_64-pc-linux-gnu");
+  compiler_free(&compiler);
 cleanup:
   fbuf_free(&buf);
   if (munmap(source, fsize) < 0) {
