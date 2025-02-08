@@ -30,6 +30,45 @@ void lexpr_free(lexpr_t *expr) {
   xfree(expr);
 };
 
+void lexpr_string(lexpr_t *expr, fbuffer_t *buf) {
+  CHECK_NULL(expr, );
+  CHECK_NULL(buf, );
+
+  switch (expr->kind) {
+  case LEXPK_LITERAL:
+    fbuf_write(buf, "Literal { ");
+    switch (expr->literal.vt) {
+    case VT_FLOAT:
+      fbuf_write(buf, "type: float, value: %f }", expr->literal.fval);
+      break;
+    case VT_INT:
+      fbuf_write(buf, "type: int, value: %ld }", expr->literal.ival);
+      break;
+    case VT_UNTYPED:
+      fbuf_write(buf, "type: untyped }");
+      break;
+    }
+    break;
+  case LEXPK_BINARY:
+    fbuf_write(buf, "Binary { op: %d, left: ", expr->binary.op);
+    lexpr_string(expr->binary.left, buf);
+    fbuf_write(buf, ", right: ");
+    lexpr_string(expr->binary.right, buf);
+    fbuf_write(buf, " }");
+    break;
+  }
+};
+
+void lvar_stmt_string(lvar_stmt *stmt, fbuffer_t *buf) {
+  CHECK_NULL(stmt, );
+  CHECK_NULL(buf, );
+
+  fbuf_write(buf, "Variable { name: %.*s, value: ", stmt->name.len,
+             stmt->name.start);
+  lexpr_string(stmt->val, buf);
+  fbuf_write(buf, " }");
+};
+
 lvar_stmt *new_lvar_stmt(tok_t name, lexpr_t *val) {
   lvar_stmt *stmt = xmalloc(sizeof(lvar_stmt));
   stmt->name = name;

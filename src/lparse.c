@@ -17,6 +17,13 @@ const int precedence[] = {
     ['/'] = 2,
 };
 
+const bin_op_t bin_ops[] = {
+    ['+'] = BO_ADD,
+    ['-'] = BO_SUB,
+    ['*'] = BO_MUL,
+    ['/'] = BO_DIV,
+};
+
 static bool next(lparser_t *parser, tok_t *result, kind_t expected[],
                  u32 expected_len) {
   kind_t got = lexer_next(parser->lexer);
@@ -116,6 +123,7 @@ static lexpr_t *expr(lparser_t *parser, u32 prec) {
     }
 
     lexpr_t *binary = new_lexpr(LEXPK_BINARY);
+    binary->binary.op = bin_ops[(u32)op.start[0]];
     binary->binary.left = lhs;
     binary->binary.right = rhs;
     lhs = binary;

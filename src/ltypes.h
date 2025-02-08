@@ -25,6 +25,7 @@ void fbuf_write(fbuffer_t *buf, char *format, ...);
 char *fbuf_get(fbuffer_t *buf);
 void fbuf_reset(fbuffer_t *buf);
 void fbuf_free(fbuffer_t *buf);
+static inline u32 fbuf_used(fbuffer_t *buf) { return buf->length; }
 
 typedef struct {
   void **items;

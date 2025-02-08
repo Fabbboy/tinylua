@@ -35,6 +35,11 @@ tok_t new_token(kind_t type, char *start, size_t len) {
 
 tok_t empty_token() { return (tok_t){0}; };
 
+void token_string(tok_t *tok, fbuffer_t *buffer) {
+  fbuf_write(buffer, "Token { type: %s, start: %.*s, len: %d }\n",
+             kind_names[tok->type], tok->len, tok->start, tok->len);
+};
+
 /***
 LEXER
 ***/
