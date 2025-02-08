@@ -211,16 +211,17 @@ static lvar_stmt *varstmt(lparser_t *parser, linkage_t link) {
   return new_lvar_stmt(name, val, link, type);
 }
 
-void parser_init(lparser_t *parser, llexer_t *lexer) {
+void parser_init(lparser_t *parser, llexer_t *lexer, lanalyzer_t *analyzer) {
   CHECK_NULL(parser, )
   CHECK_NULL(lexer, )
 
   parser->lexer = lexer;
+  parser->analyzer = analyzer;
   parser->ast = new_ast();
   parser->errs = new_list(8);
 };
 
-err_list_t *parser_parse(lparser_t *parser) {
+perr_list_t *parser_parse(lparser_t *parser) {
   CHECK_NULL(parser, NULL);
   tok_t tok;
   EXP_LIST(expected, KIND_EOF, KIND_LOCAL, KIND_IDENT);

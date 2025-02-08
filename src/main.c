@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include "errs.h"
+#include "lanalyzer.h"
 #include "last.h"
 #include "llex.h"
 #include "llog.h"
@@ -46,9 +47,11 @@ int main(int argc, char const *argv[]) {
 
   llexer_t lexer;
   lparser_t parser;
+  lanalyzer_t analyzer;
   lexer_init(&lexer, source, fsize);
-  parser_init(&parser, &lexer);
-  err_list_t *errs = parser_parse(&parser);
+  analyzer_init(&analyzer);
+  parser_init(&parser, &lexer, &analyzer);
+  perr_list_t *errs = parser_parse(&parser);
   if (errs != NULL) {
     for (size_t i = 0; i < errs->length; i++) {
       lparse_err_t *err = errs->items[i];
@@ -77,6 +80,7 @@ cleanup:
     perror("Failed to unmap file");
   }
   close(fd);
+  analyzer_free(&analyzer);
   parser_free(&parser);
 
   return 0;

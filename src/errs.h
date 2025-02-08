@@ -24,7 +24,7 @@ typedef struct {
   };
 } lparse_err_t;
 
-typedef list_t err_list_t;
+typedef list_t perr_list_t;
 
 lparse_err_t *new_unexpected_err(tok_t got, kind_t *expected, u32 expected_len);
 lparse_err_t* new_lexer_err(tok_t got);
