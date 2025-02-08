@@ -8,15 +8,18 @@
 #include "llog.h"
 #include "ltypes.h"
 
-#define KEYWORDS_COUNT 1
+#define KEYWORDS_COUNT 3
 #define NEWT(kind) new_token(kind, lexer->ptr, get_len(lexer))
 
 static struct {
   u32 key;
   const char *inter;
   kind_t value;
+  value_type_t type;
 } keyword_lookup[KEYWORDS_COUNT] = {
-    {0, "local", KIND_LOCAL},
+    {0, "local", KIND_LOCAL, VT_UNTYPED},
+    {0, "int", KIND_TYPE, VT_INT},
+    {0, "float", KIND_TYPE, VT_FLOAT},
 };
 
 const char *kind_names[] = {
@@ -79,16 +82,19 @@ static kind_t lex_ident(llexer_t *lexer) {
   }
 
   kind_t kind = KIND_IDENT;
+  value_type_t vt = VT_UNTYPED;
   u32 len = get_len(lexer);
   u32 hash = hash_len(lexer->ptr, len);
   DEBUG_LOG("computed hash %d for %.*s\n", hash, len, lexer->ptr);
   for (int i = 0; i < KEYWORDS_COUNT; i++) {
     if (hash == keyword_lookup[i].key) {
       kind = keyword_lookup[i].value;
+      vt = keyword_lookup[i].type;
     }
   }
 
   lexer->nextTok = NEWT(kind);
+  lexer->nextTok.vt = vt;
   return kind;
 }
 
@@ -172,6 +178,10 @@ static void lexer_lex(llexer_t *lexer) {
   case ')':
     lexer->pos++;
     lexer->nextTok = NEWT(KIND_RPAREN);
+    break;
+  case ':':
+    lexer->pos++;
+    lexer->nextTok = NEWT(KIND_COLON);
     break;
   default:
     lexer->pos++;

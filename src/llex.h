@@ -16,8 +16,9 @@
   X(STAR)                                                                      \
   X(SLASH)                                                                     \
   X(LPAREN)                                                                    \
-  X(RPAREN)
-
+  X(RPAREN)                                                                    \
+  X(COLON)                                                                     \
+  X(TYPE)
 typedef enum {
 #define X(A) KIND_##A,
   KIND_LIST
@@ -26,10 +27,17 @@ typedef enum {
 
 extern const char *kind_names[];
 
+typedef enum {
+  VT_UNTYPED,
+  VT_FLOAT,
+  VT_INT,
+} value_type_t;
+
 typedef struct {
   kind_t type;
   char *start;
   size_t len;
+  value_type_t vt;
 } tok_t;
 
 tok_t new_token(kind_t type, char *start, size_t len);

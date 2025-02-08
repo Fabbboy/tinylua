@@ -5,6 +5,7 @@
 #include "ltypes.h"
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define EXP_LIST(name, ...)                                                    \
   kind_t name[] = {__VA_ARGS__};                                               \
@@ -165,10 +166,6 @@ static lvar_stmt *varstmt(lparser_t *parser, linkage_t link) {
   tok_t name;
   tok_t assign;
   bool res;
-  /*   bool res = next(parser, &name, exp_name, exp_name_len);
-    if (!res) {
-      return NULL;
-    } */
   if (link == LINK_EXTERNAL) {
     name = parser->lexer->currTok;
   } else {
@@ -176,6 +173,19 @@ static lvar_stmt *varstmt(lparser_t *parser, linkage_t link) {
     if (!res) {
       return NULL;
     }
+  }
+
+  EXP_LIST(exp_colon, KIND_COLON);
+  value_type_t type = VT_UNTYPED;
+  if (peek(parser, exp_colon, exp_colon_len)) {
+    lexer_next(parser->lexer);
+    EXP_LIST(exp_type, KIND_TYPE);
+    tok_t type_tok;
+    res = next(parser, &type_tok, exp_type, exp_type_len);
+    if (!res) {
+      return NULL;
+    }
+    type = type_tok.vt;
   }
 
   EXP_LIST(exp_assign, KIND_ASSIGN);
@@ -188,7 +198,7 @@ static lvar_stmt *varstmt(lparser_t *parser, linkage_t link) {
   if (val == NULL) {
     return NULL;
   }
-  return new_lvar_stmt(name, val, link);
+  return new_lvar_stmt(name, val, link, type);
 }
 
 void parser_init(lparser_t *parser, llexer_t *lexer) {

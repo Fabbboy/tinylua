@@ -12,12 +12,6 @@ typedef enum {
 } lexpr_kind_t;
 
 typedef enum {
-  VT_UNTYPED,
-  VT_FLOAT,
-  VT_INT,
-} value_type_t;
-
-typedef enum {
   BO_ADD,
   BO_SUB,
   BO_MUL,
@@ -55,9 +49,11 @@ typedef struct {
   tok_t name;
   lexpr_t *val;
   linkage_t link;
+  value_type_t type;
 } lvar_stmt;
 
-lvar_stmt *new_lvar_stmt(tok_t name, lexpr_t *val, linkage_t link);
+lvar_stmt *new_lvar_stmt(tok_t name, lexpr_t *val, linkage_t link,
+                         value_type_t type);
 void lvar_stmt_free(void *item);
 void lvar_stmt_string(lvar_stmt *stmt, fbuffer_t *buf);
 
