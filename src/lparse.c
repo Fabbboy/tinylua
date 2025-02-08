@@ -76,24 +76,20 @@ static void sync(lparser_t *parser, kind_t expected[], u32 expected_len) {
   }
 }
 
-static lexpr_t *sexpr(lparser_t *parser) {
-  EXP_LIST(exp_name, KIND_NUMBER, KIND_DECIMAL);
+static lexpr_t *factor(lparser_t *parser) {
+  EXP_LIST(exp_number, KIND_NUMBER, KIND_DECIMAL);
   tok_t tok;
-  bool res = next(parser, &tok, exp_name, exp_name_len);
-  if (!res) {
+  if (!next(parser, &tok, exp_number, exp_number_len)) {
     return NULL;
   }
 
-  lexpr_t *expr = NULL;
+  lexpr_t *expr = new_lexpr(LEXPK_LITERAL);
   switch (tok.type) {
   case KIND_NUMBER:
-    expr = new_lexpr(LEXPK_LITERAL);
     expr->literal.vt = VT_INT;
     expr->literal.ival = atol(tok.start);
-    DEBUG_LOG("Parsed number: %ld\n", expr->literal.ival);
     break;
   case KIND_DECIMAL:
-    expr = new_lexpr(LEXPK_LITERAL);
     expr->literal.vt = VT_FLOAT;
     expr->literal.fval = atof(tok.start);
     break;
@@ -102,25 +98,45 @@ static lexpr_t *sexpr(lparser_t *parser) {
   }
 
   return expr;
-};
+}
 
-static lexpr_t *expr(lparser_t *parser, u32 prec) {
-  lexpr_t *lhs = sexpr(parser);
+static lexpr_t *term(lparser_t *parser) {
+  lexpr_t *lhs = factor(parser);
+  if (!lhs)
+    return NULL;
 
-  EXP_LIST(exp_op, KIND_PLUS, KIND_MINUS, KIND_STAR, KIND_SLASH);
-  while (peek(parser, exp_op, exp_op_len)) {
+  EXP_LIST(exp_muldiv, KIND_STAR, KIND_SLASH);
+  while (peek(parser, exp_muldiv, exp_muldiv_len)) {
     tok_t op;
-    next(parser, &op, exp_op, exp_op_len);
+    next(parser, &op, exp_muldiv, exp_muldiv_len);
 
-    u32 new_prec = precedence[(u32)op.start[0]];
-    if (new_prec < prec) {
-      break;
-    }
-
-    lexpr_t *rhs = expr(parser, new_prec + 1);
-    if (rhs == NULL) {
+    lexpr_t *rhs = factor(parser);
+    if (!rhs)
       return NULL;
-    }
+
+    lexpr_t *binary = new_lexpr(LEXPK_BINARY);
+    binary->binary.op = bin_ops[(u32)op.start[0]];
+    binary->binary.left = lhs;
+    binary->binary.right = rhs;
+    lhs = binary;
+  }
+
+  return lhs;
+}
+
+static lexpr_t *expr(lparser_t *parser) {
+  lexpr_t *lhs = term(parser);
+  if (!lhs)
+    return NULL;
+
+  EXP_LIST(exp_addsub, KIND_PLUS, KIND_MINUS);
+  while (peek(parser, exp_addsub, exp_addsub_len)) {
+    tok_t op;
+    next(parser, &op, exp_addsub, exp_addsub_len);
+
+    lexpr_t *rhs = term(parser);
+    if (!rhs)
+      return NULL;
 
     lexpr_t *binary = new_lexpr(LEXPK_BINARY);
     binary->binary.op = bin_ops[(u32)op.start[0]];
@@ -147,7 +163,7 @@ static lvar_stmt *varstmt(lparser_t *parser) {
     return NULL;
   }
 
-  lexpr_t *val = expr(parser, 0);
+  lexpr_t *val = expr(parser);
   if (val == NULL) {
     return NULL;
   }

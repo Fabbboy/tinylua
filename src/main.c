@@ -7,7 +7,7 @@
 #include "lparse.h"
 #include "ltypes.h"
 int main() {
-  const char source[] = "local test = 123.123 + 32 * 2";
+  const char source[] = "local test = 2*  123.123 + 32 * 2";
 
   llexer_t lexer;
   lparser_t parser;
