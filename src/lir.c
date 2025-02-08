@@ -33,14 +33,13 @@ void lir_global_free(void *global) {
   xfree(global);
 };
 
-lir_module_t *new_lir_module() {
-  lir_module_t *mod = xmalloc(sizeof(lir_module_t));
-  mod->globals = new_list(8);
+lir_module_t new_lir_module() {
+  lir_module_t mod;
+  mod.globals = new_list(8);
   return mod;
 };
 
 void lir_module_free(lir_module_t *mod) {
   CHECK_NULL(mod, );
   list_free(&mod->globals, lir_global_free);
-  xfree(mod);
 };

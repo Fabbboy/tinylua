@@ -9,6 +9,7 @@
 
 #include "lanalyzer.h"
 #include "last.h"
+#include "lcompiler.h"
 #include "lerrs.h"
 #include "llex.h"
 #include "llog.h"
@@ -86,6 +87,9 @@ int main(int argc, char const *argv[]) {
     fbuf_reset(&buf);
   }
 
+  lcompiler_t compiler;
+  compiler_init(&compiler);
+  compiler_free(&compiler);
 cleanup:
   fbuf_free(&buf);
   if (munmap(source, fsize) < 0) {

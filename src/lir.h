@@ -39,5 +39,5 @@ typedef struct {
   lir_global_list_t globals;
 } lir_module_t;
 
-lir_module_t *new_lir_module();
+lir_module_t new_lir_module();
 void lir_module_free(lir_module_t *mod);
