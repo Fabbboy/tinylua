@@ -164,9 +164,18 @@ static lvar_stmt *varstmt(lparser_t *parser, linkage_t link) {
   EXP_LIST(exp_name, KIND_IDENT);
   tok_t name;
   tok_t assign;
-  bool res = next(parser, &name, exp_name, exp_name_len);
-  if (!res) {
-    return NULL;
+  bool res;
+  /*   bool res = next(parser, &name, exp_name, exp_name_len);
+    if (!res) {
+      return NULL;
+    } */
+  if (link == LINK_EXTERNAL) {
+    name = parser->lexer->currTok;
+  } else {
+    res = next(parser, &name, exp_name, exp_name_len);
+    if (!res) {
+      return NULL;
+    }
   }
 
   EXP_LIST(exp_assign, KIND_ASSIGN);

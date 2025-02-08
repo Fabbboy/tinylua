@@ -46,7 +46,7 @@ LEXER
 
 static char get_curr(llexer_t *lexer) {
   CHECK_NULL(lexer, 0);
-  if (lexer->pos >= lexer->length) {
+  if (lexer->pos > lexer->length) {
     return 0;
   }
 
@@ -54,7 +54,7 @@ static char get_curr(llexer_t *lexer) {
 }
 
 static char *get_start(llexer_t *lexer) {
-  if (lexer->pos >= lexer->length) {
+  if (lexer->pos > lexer->length) {
     return NULL;
   }
 
@@ -110,9 +110,15 @@ static kind_t lex_number(llexer_t *lexer) {
   return k;
 }
 
+static void discard_comment(llexer_t *lexer) {
+  while (get_curr(lexer) != '\n' && get_curr(lexer) != 0) {
+    lexer->pos++;
+  }
+}
+
 static void lexer_lex(llexer_t *lexer) {
   CHECK_NULL(lexer, );
-  if (lexer->pos >= lexer->length) {
+  if (lexer->pos > lexer->length) {
     DEBUG_LOG("Reached end of input\n");
     lexer->currTok = empty_token();
     return;
@@ -143,6 +149,12 @@ static void lexer_lex(llexer_t *lexer) {
     break;
   case '-':
     lexer->pos++;
+    if (get_curr(lexer) == '-') {
+      lexer->pos++;
+      discard_comment(lexer);
+      lexer_lex(lexer);
+      return;
+    }
     lexer->nextTok = NEWT(KIND_MINUS);
     break;
   case '*':

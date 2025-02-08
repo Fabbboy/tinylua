@@ -1,2 +1,3 @@
 local hello = 123
-hello2 = 32.2
+-- hell = 12332.2
+local hell2 = 22.2

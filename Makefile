@@ -30,11 +30,11 @@ clean:
 
 .PHONY: run
 run: all
-	./$(TARGET)
+	./$(TARGET) $(ARGS)
 
 .PHONY: mem
 mem: all
-	valgrind --leak-check=full ./$(TARGET)
+	valgrind --leak-check=full ./$(TARGET) $(ARGS)
 
 .PHONY: cm
 cm: clean
