@@ -9,3 +9,6 @@ local a = 1 -- infers int
 local b: int = 1 -- int
 local c: float = 1.0 -- float
 ```
+
+### After this I probably need medical help
+It's a mess
