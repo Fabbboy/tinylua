@@ -183,7 +183,7 @@ static lvar_stmt *varstmt(lparser_t *parser, linkage_t link) {
   }
 
   EXP_LIST(exp_colon, KIND_COLON);
-  value_type_t type = VT_UNTYPED;
+  lvalue_type_t type = VT_UNTYPED;
   if (peek(parser, exp_colon, exp_colon_len)) {
     res = next(parser, &assign, exp_colon, exp_colon_len);
     if (!res) {

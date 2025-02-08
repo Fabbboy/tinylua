@@ -22,7 +22,7 @@ struct lexpr_t {
   lexpr_kind_t kind;
   union {
     struct {
-      value_type_t vt;
+      lvalue_type_t vt;
       union {
         f64 fval;
         s64 ival;
@@ -49,11 +49,11 @@ typedef struct {
   tok_t name;
   lexpr_t *val;
   linkage_t link;
-  value_type_t type;
+  lvalue_type_t type;
 } lvar_stmt;
 
 lvar_stmt *new_lvar_stmt(tok_t name, lexpr_t *val, linkage_t link,
-                         value_type_t type);
+                         lvalue_type_t type);
 void lvar_stmt_free(void *item);
 void lvar_stmt_string(lvar_stmt *stmt, fbuffer_t *buf);
 

@@ -2,15 +2,15 @@
 #include "llex.h"
 #include "llog.h"
 
-static value_type_t infer_type(lexpr_t *expr) {
+static lvalue_type_t infer_type(lexpr_t *expr) {
   CHECK_NULL(expr, VT_UNTYPED);
 
   switch (expr->kind) {
   case LEXPK_LITERAL:
     return expr->literal.vt;
   case LEXPK_BINARY: {
-    value_type_t lhs = infer_type(expr->binary.left);
-    value_type_t rhs = infer_type(expr->binary.right);
+    lvalue_type_t lhs = infer_type(expr->binary.left);
+    lvalue_type_t rhs = infer_type(expr->binary.right);
     if (lhs == VT_FLOAT || rhs == VT_FLOAT) {
       return VT_FLOAT;
     }
@@ -35,7 +35,7 @@ void ana_infer_type(lanalyzer_t *ana, lvar_stmt *var) {
     return;
   }
 
-  value_type_t type = infer_type(var->val);
+  lvalue_type_t type = infer_type(var->val);
   var->type = type;
   DEBUG_LOG("Inferred type: %d\n", type);
 };

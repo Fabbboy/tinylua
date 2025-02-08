@@ -15,7 +15,7 @@ static struct {
   u32 key;
   const char *inter;
   kind_t value;
-  value_type_t type;
+  lvalue_type_t type;
 } keyword_lookup[KEYWORDS_COUNT] = {
     {0, "local", KIND_LOCAL, VT_UNTYPED},
     {0, "int", KIND_TYPE, VT_INT},
@@ -82,7 +82,7 @@ static kind_t lex_ident(llexer_t *lexer) {
   }
 
   kind_t kind = KIND_IDENT;
-  value_type_t vt = VT_UNTYPED;
+  lvalue_type_t vt = VT_UNTYPED;
   u32 len = get_len(lexer);
   u32 hash = hash_len(lexer->ptr, len);
   DEBUG_LOG("computed hash %d for %.*s\n", hash, len, lexer->ptr);

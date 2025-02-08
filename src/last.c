@@ -70,7 +70,7 @@ void lvar_stmt_string(lvar_stmt *stmt, fbuffer_t *buf) {
 };
 
 lvar_stmt *new_lvar_stmt(tok_t name, lexpr_t *val, linkage_t link,
-                         value_type_t type) {
+                         lvalue_type_t type) {
   lvar_stmt *stmt = xmalloc(sizeof(lvar_stmt));
   stmt->name = name;
   stmt->val = val;

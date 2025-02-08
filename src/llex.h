@@ -31,13 +31,13 @@ typedef enum {
   VT_UNTYPED,
   VT_FLOAT,
   VT_INT,
-} value_type_t;
+} lvalue_type_t;
 
 typedef struct {
   kind_t type;
   char *start;
   size_t len;
-  value_type_t vt;
+  lvalue_type_t vt;
 } tok_t;
 
 tok_t new_token(kind_t type, char *start, size_t len);
