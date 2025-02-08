@@ -153,6 +153,14 @@ static void lexer_lex(llexer_t *lexer) {
     lexer->pos++;
     lexer->nextTok = NEWT(KIND_SLASH);
     break;
+  case '(':
+    lexer->pos++;
+    lexer->nextTok = NEWT(KIND_LPAREN);
+    break;
+  case ')':
+    lexer->pos++;
+    lexer->nextTok = NEWT(KIND_RPAREN);
+    break;
   default:
     lexer->pos++;
     lexer->nextTok = new_token(KIND_ERR, lexer->ptr, 1);

@@ -14,7 +14,9 @@
   X(PLUS)                                                                      \
   X(MINUS)                                                                     \
   X(STAR)                                                                      \
-  X(SLASH)
+  X(SLASH)                                                                     \
+  X(LPAREN)                                                                    \
+  X(RPAREN)
 
 typedef enum {
 #define X(A) KIND_##A,
@@ -32,7 +34,7 @@ typedef struct {
 
 tok_t new_token(kind_t type, char *start, size_t len);
 tok_t empty_token();
-void token_string(tok_t* tok, fbuffer_t* buffer);
+void token_string(tok_t *tok, fbuffer_t *buffer);
 
 typedef struct {
   const char *src;

@@ -24,6 +24,10 @@ const bin_op_t bin_ops[] = {
     ['/'] = BO_DIV,
 };
 
+static lexpr_t *factor(lparser_t *parser);
+static lexpr_t *term(lparser_t *parser);
+static lexpr_t *expr(lparser_t *parser);
+
 static bool next(lparser_t *parser, tok_t *result, kind_t expected[],
                  u32 expected_len) {
   kind_t got = lexer_next(parser->lexer);
@@ -77,27 +81,35 @@ static void sync(lparser_t *parser, kind_t expected[], u32 expected_len) {
 }
 
 static lexpr_t *factor(lparser_t *parser) {
-  EXP_LIST(exp_number, KIND_NUMBER, KIND_DECIMAL);
+  EXP_LIST(exp_number, KIND_NUMBER, KIND_DECIMAL, KIND_LPAREN);
   tok_t tok;
   if (!next(parser, &tok, exp_number, exp_number_len)) {
     return NULL;
   }
 
-  lexpr_t *expr = new_lexpr(LEXPK_LITERAL);
+  lexpr_t *_expr = new_lexpr(LEXPK_LITERAL);
   switch (tok.type) {
   case KIND_NUMBER:
-    expr->literal.vt = VT_INT;
-    expr->literal.ival = atol(tok.start);
+    _expr->literal.vt = VT_INT;
+    _expr->literal.ival = atol(tok.start);
     break;
   case KIND_DECIMAL:
-    expr->literal.vt = VT_FLOAT;
-    expr->literal.fval = atof(tok.start);
+    _expr->literal.vt = VT_FLOAT;
+    _expr->literal.fval = atof(tok.start);
+    break;
+  case KIND_LPAREN:
+    _expr = expr(parser);
+    EXP_LIST(exp_rparen, KIND_RPAREN);
+    if (!next(parser, &tok, exp_rparen, exp_rparen_len)) {
+      ERROR_LOG("Expected ')' after expression\n");
+      return NULL;
+    }
     break;
   default:
     UNREACHABLE
   }
 
-  return expr;
+  return _expr;
 }
 
 static lexpr_t *term(lparser_t *parser) {
