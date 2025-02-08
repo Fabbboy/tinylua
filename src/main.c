@@ -1,7 +1,11 @@
+#include <fcntl.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "last.h"
 #include "llex.h"
@@ -16,21 +20,27 @@ int main(int argc, char const *argv[]) {
   }
 
   const char *file = argv[1];
-  FILE *f = fopen(file, "r");
-  if (f == NULL) {
-    printf("Failed to open file: %s\n", file);
+  int fd = open(file, O_RDONLY);
+  if (fd < 0) {
+    perror("Failed to open file");
     return 1;
   }
 
-  fseek(f, 0, SEEK_END);
-  long fsize = ftell(f);
-  fseek(f, 0, SEEK_SET);
+  struct stat st;
+  if (fstat(fd, &st) < 0) {
+    perror("Failed to stat file");
+    close(fd);
+    return 1;
+  }
 
-  char *source = xmalloc(fsize + 1);
-  fread(source, 1, fsize, f);
-  fclose(f);
+  size_t fsize = st.st_size;
+  char *source = mmap(NULL, fsize, PROT_READ, MAP_PRIVATE, fd, 0);
+  if (source == MAP_FAILED) {
+    perror("Failed to mmap file");
+    close(fd);
+    return 1;
+  }
 
-  source[fsize] = 0;
   DEBUG_LOG("file size: %ld\n", fsize);
 
   llexer_t lexer;
@@ -49,6 +59,12 @@ int main(int argc, char const *argv[]) {
   }
   fbuf_free(&buf);
 
-  xfree(source);
+  // Cleanup
+  if (munmap(source, fsize) < 0) {
+    perror("Failed to unmap file");
+  }
+  close(fd);
   parser_free(&parser);
+
+  return 0;
 }
