@@ -4,7 +4,7 @@ CFLAGS:=-Wall -Wextra -Werror -std=c11 -g
 
 SRC:=src
 OBJ:=obj
-TARGET:=$(OBJ)/main
+TARGET:=$(OBJ)/luac
 
 SRCS:=$(wildcard $(SRC)/*.c)
 OBJS:=$(patsubst $(SRC)/%.c,$(OBJ)/%.o,$(SRCS))
