@@ -1,9 +1,8 @@
 #pragma once
 
-#include "lir.h"
+#include "last.h"
 typedef struct {
-  lir_module_t module;
+  last_t *ast;
 } lcompiler_t;
 
-void compiler_init(lcompiler_t *compiler);
-void compiler_free(lcompiler_t *compiler);
+void compiler_init(lcompiler_t *compiler, last_t *ast);

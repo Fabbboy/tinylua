@@ -88,8 +88,7 @@ int main(int argc, char const *argv[]) {
   }
 
   lcompiler_t compiler;
-  compiler_init(&compiler);
-  compiler_free(&compiler);
+  compiler_init(&compiler, &ast);
 cleanup:
   fbuf_free(&buf);
   if (munmap(source, fsize) < 0) {

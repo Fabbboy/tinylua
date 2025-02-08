@@ -1,6 +1,5 @@
 #pragma once
 
-#include "lir.h"
 #include "llex.h"
 #include "ltypes.h"
 
@@ -40,6 +39,11 @@ struct lexpr_t {
     } binary;
   };
 };
+
+typedef enum {
+  LINK_EXTERNAL,
+  LINK_INTERNAL,
+} linkage_t;
 
 lexpr_t *new_lexpr(lexpr_kind_t kind);
 void lexpr_free(lexpr_t *expr);
